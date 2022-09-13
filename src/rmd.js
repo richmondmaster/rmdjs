@@ -381,11 +381,21 @@ rmd.scrollTo = function(id) {
 };
 
 
-rmd.goToUrl = function(redirect_url, timeout) {
-	if(typeof(timeout) == undefined)
+rmd.goToUrl = function(redirect_url, timeout, new_instance) {
+	if(typeof timeout == undefined) {
 		timeout = 0;
-	
-	setTimeout("window.location.href = '" + redirect_url + "';", parseInt(timeout));
+	}
+
+	if (typeof new_instance == undefined) {
+		new_instance = false;
+	}
+
+	if (new_instance) {
+		window.open(redirect_url, "_blank");
+	}
+	else {
+		setTimeout("window.location.href = '" + redirect_url + "';", parseInt(timeout));
+	}
 };
 
 rmd.clickToUrl = function(url, new_tab, timeout) {
@@ -396,8 +406,9 @@ rmd.clickToUrl = function(url, new_tab, timeout) {
 		var a = document.createElement('a');
 		a.href = url;
 		
-		if(new_tab)
-			a.target = "_blank";
+		if(new_tab) {
+			a.target = '_blank';
+		}
 		
 		document.body.appendChild(a);
 		a.click();
@@ -609,18 +620,32 @@ rmd.revertValue = function(params) {
 	}
 };
 
+rmd.getPart = function (s, delimiter, index) {
+	var parts = s.split(delimiter);
+
+	if (parts) {
+		return parts.length > 0 ? parts[index] : '';
+	}
+	else {
+		return '';
+	}
+};
+
 rmd.getLastPart = function(s, delimiter) {
 	var parts = s.split(delimiter);
 	
-	if(parts)
+	if(parts) {
 		return parts.length > 0 ? parts[parts.length - 1] : "";
-	else
+	}
+	else {
 		return "";
+	}
 };
 
 rmd.getKey = function (obj, value) {
-	if (!obj)
+	if (!obj) {
 		return '';
+	}
 
 	for (key in obj) {
 		if (obj[key] == value)
@@ -1058,10 +1083,18 @@ rmd.querystring = function(key, def) {
 };
 
 
-rmd.getUrlSegment = function(n) {
-	var url = window.location.pathname,
-		parts = url.split('/');
+rmd.getUrlSegment = function(n, offset_uri) {
+	var url = window.location.href,
+		path = window.location.pathname,
+		pos = -1,
+		parts = '';
 
+	if (typeof offset_uri != 'undefined') {
+		pos = url.indexOf(offset_uri);
+		url = pos > -1 ? url.substring(pos + offset_uri.length, url.length) : url;
+	}
+
+	parts = url.split('/');
 	return n > -1 ? parts[n] : parts[parts.length - 1];
 };
 
