@@ -13,21 +13,25 @@ rmd.app.search = function (params) {
 	$(document).trigger('search', params);
 };
 
-rmd.app.themeize = function (el, type) {
-	var _el = $(el);
+rmd.app.themeize = function (params) {
+	params = params || {};
 
-	type = rmd.isEmpty(type) ? '' : type;
+	var _el = $(params.element),
+		id = typeof params.id == 'undefined' ? '' : params.id,
+		type = typeof params.type == 'undefined' ? '' : params.type;
 
-	_el.addClass('rmd-theme-' + type.toLowerCase());
+	_el.addClass(id + '-theme-' + type.toLowerCase());
 };
 
-rmd.app.unthemeize = function (el) {
-	var _el = $(el);
+rmd.app.unthemeize = function (params) {
+	params = params || {};
 
-	type = rmd.isEmpty(type) ? '' : type;
+	var _el = $(params.element),
+		id = typeof params.id == 'undefined' ? '' : params.id,
+		type = typeof params.type == 'undefined' ? '' : params.type;
 
 	_el.removeClass(function (index, className) {
-		return (className.match(/(^|\s)rmd-theme-\S+/g) || []).join(' ');
+		return (className.match('(^|\s)' + id + '-theme-\S+') || []).join(' ');
 	});
 };
 
