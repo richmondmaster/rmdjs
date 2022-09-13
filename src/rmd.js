@@ -1053,6 +1053,37 @@ rmd.isPhoneNumber = function(s) {
 	return s.search(/^[0-9-]+$/) == -1 ? false : true;
 }
 
+rmd.getUpcCheckDigit = function(upc) {
+	 //calculate the check digit
+	var chkDigit = 0,
+		chkDigitOdd = 0,
+		chkDigitEven = 0,
+		digit = "",
+		ret = "";
+
+	for (var x = 0; x < 11; x++) {
+		digit = upc.charAt(x);
+		switch (x + 1) {
+			case 1: case 3: case 5: case 7: case 9: case 11:
+				chkDigitOdd += parseInt(digit);
+				break;
+			case 2: case 4: case 6: case 8: case 10:
+				chkDigitEven += parseInt(digit);
+				break;
+			default:
+				break;
+		}
+	}
+
+	chkDigit = (3 * chkDigitOdd) + chkDigitEven;
+	chkDigit = (chkDigit % 10);
+	if (chkDigit == 0)
+		ret = chkDigit + '';
+	else
+		ret = (10 - chkDigit) + '';
+
+	return ret;
+};
 
 rmd.getQueryString = function() {
 	var qs  = {},
