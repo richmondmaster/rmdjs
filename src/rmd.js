@@ -255,6 +255,9 @@ rmd.random = function (pattern) {
     return tmp;
 };
 
+rmd.clone = function (obj) {
+	return JSON.parse(JSON.stringify(obj));
+};
 
 rmd.hasValue = function (obj, value) {
 	if (typeof obj != 'object' && typeof obj != 'Array') {
