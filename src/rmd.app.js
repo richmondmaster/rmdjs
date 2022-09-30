@@ -493,19 +493,19 @@ rmd.app.session.affirm = function(params, callbacks) {
 
 	rmd.app.session.current.callbacks['affirm'] = callbacks;
 	
-	if (rmd.app.session.authenticated) {
+	if (rmd.app.session.current.authenticated) {
 		var timeout_minutes = rmd.app.session.current.timeoutIn,
 			timeout_milliseconds = !isNaN(parseInt(timeout_minutes)) ? parseInt(timeout_minutes) * 60 * 1000 : 30 * 60 * 1000,
 			timeout_left_milliseconds = (timeout_milliseconds * 0.25),
 			base_uri = document.baseURI,
 			f = function () {
 
-				rmd.app.session.timeoutIds['affirm'] = setTimeout(function () {
+				rmd.app.session.current.timeoutIds['affirm'] = setTimeout(function () {
 					var time_type = (timeout_left_milliseconds / 1000) < 60 ? 'second' : 'minute',
 						time_left = (timeout_left_milliseconds / 1000) < 60 ? timeout_left_milliseconds / 1000 : Math.round(timeout_left_milliseconds / 1000 / 60),
 						then = Date.now();
 
-						rmd.app.session.timeoutIds['autoLogout'] = setTimeout(function () {
+						rmd.app.session.current.timeoutIds['autoLogout'] = setTimeout(function () {
 							if('logout' in callbacks) {
 								callbacks.logout();
 							}
@@ -532,7 +532,7 @@ rmd.app.session.affirm = function(params, callbacks) {
 						}
 					}
 
-					clearTimeout(rmd.app.session.timeoutIds['autoLogout']);
+					clearTimeout(rmd.app.session.current.timeoutIds['autoLogout']);
 
 				}, timeout_left_milliseconds * 0.75);
 			};
