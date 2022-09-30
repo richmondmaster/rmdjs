@@ -478,8 +478,8 @@ rmd.app.session.current = {
 };
 
 rmd.app.session.reset = function() {
-	clearTimeout(rmd.app.session.timeoutIds['autoLogout']);
-	clearTimeout(rmd.app.session.timeoutIds['affirm']);
+	clearTimeout(rmd.app.session.current.timeoutIds['autoLogout']);
+	clearTimeout(rmd.app.session.current.timeoutIds['affirm']);
 
 	rmd.app.session.affirm();
 };
