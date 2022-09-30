@@ -7,6 +7,7 @@
 
 rmd.app = {};
 rmd.app.session = {};
+rmd.app.session.current = {};
 rmd.app.animate = {};
 rmd.app.refs = {};
 
