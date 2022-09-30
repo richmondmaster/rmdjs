@@ -6,6 +6,7 @@
 // Common app services and features
 
 rmd.app = {};
+rmd.app.session = {};
 rmd.app.animate = {};
 rmd.app.refs = {};
 
@@ -460,4 +461,83 @@ rmd.app.balloon = function (message, target, at, f_ok, f_cancel) {
 	//d.css("top", t.position().top);
 
 	return d;
+};
+
+rmd.app.session.current = {
+	authenticated: false,
+	timeoutIn: -1,
+	timeoutIds: {
+		affirm: -1,
+		autoLogout: -1
+	},
+	callbacks: {
+		affirm: {},
+		reset: {}
+	}
+};
+
+rmd.app.session.reset = function() {
+	clearTimeout(rmd.app.session.timeoutIds['autoLogout']);
+	clearTimeout(rmd.app.session.timeoutIds['affirm']);
+
+	rmd.app.session.affirm();
+};
+
+
+rmd.app.session.affirm = function(params, callbacks) {
+
+	params = params || {};
+
+	callbacks = callbacks || rmd.app.session.current.callbacks['affirm'] || {};
+
+	rmd.app.session.current.callbacks['affirm'] = callbacks;
+	
+	if (rmd.app.session.authenticated) {
+		var timeout_minutes = rmd.app.session.current.timeoutIn,
+			timeout_milliseconds = !isNaN(parseInt(timeout_minutes)) ? parseInt(timeout_minutes) * 60 * 1000 : 30 * 60 * 1000,
+			timeout_left_milliseconds = (timeout_milliseconds * 0.25),
+			base_uri = document.baseURI,
+			f = function () {
+
+				rmd.app.session.timeoutIds['affirm'] = setTimeout(function () {
+					var time_type = (timeout_left_milliseconds / 1000) < 60 ? 'second' : 'minute',
+						time_left = (timeout_left_milliseconds / 1000) < 60 ? timeout_left_milliseconds / 1000 : Math.round(timeout_left_milliseconds / 1000 / 60),
+						then = Date.now();
+
+						rmd.app.session.timeoutIds['autoLogout'] = setTimeout(function () {
+							if('logout' in callbacks) {
+								callbacks.logout();
+							}
+						}, timeout_left_milliseconds);
+
+
+					// TODO: replace with custom dialog
+					if (confirm('Your session is going to expire in about ' + time_left + '(s) ' + time_type + '. Do you wish to stay logged in?')) {
+						if (Math.floor((Date.now() - then) / 1000 / (time_type == 'minute' ? 60 : 1)) > time_left) {
+							if('logoutWaited' in callbacks) {
+								callbacks.logoutWaited();
+							}
+						}
+						else {
+							if('sessionReset' in callbacks) {
+								callbacks.sessionReset();
+							}
+							f();
+						}
+					}
+					else {
+						if('logoutOk' in callbacks) {
+							callbacks.logoutOk();
+						}
+					}
+
+					clearTimeout(rmd.app.session.timeoutIds['autoLogout']);
+
+				}, timeout_left_milliseconds * 0.75);
+			};
+
+		f();
+	}
+	
+	
 };
