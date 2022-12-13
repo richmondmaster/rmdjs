@@ -85,7 +85,7 @@ rmd.app.setShift = function (params) {
 	
 	params = params || {};
 	
-	if(body.hasClass('view-shift-left') || body.hasClass('view-shift-right') || body.hasClass('view-shift-top') || body.hasClass('view-map')) {
+	if(body.hasClass('mode--layout-shift-left') || body.hasClass('mode--layout-shift-right') || body.hasClass('mode--layout-shift-top') || body.hasClass('mode--map')) {
 		rmd.app.closeShift();
 		return;
 	}
@@ -99,19 +99,19 @@ rmd.app.setShift = function (params) {
 		
 		e = $(params.e);
 		e.detach();
-		e.appendTo('.layout-shift-body-' + side + '-content-container');
+		e.appendTo('.site-layout-shift > div[style*="grid-area:' + side + '"]');
 		e.removeClass('hide');
 		
-		$(document).on('shift.' + side + '.close', function() {
+		$(document).on('layout.shift.' + side + '.close', function() {
 			e.addClass('hide');
 		});
 	}
 	
-	body.addClass('view-shift-noscroll-y');
-	body.addClass('view-shift-viewport');
-	body.addClass('view-shift-' + side);
+	body.addClass('mode--noscroll-y');
+	//body.addClass('mode--viewport');
+	body.addClass('mode--layout-shift-' + side);
 	
-	$(document).trigger('shift.' + side + '.afterset');
+	$(document).trigger('layout.shift.' + side + '.afterset');
 		
 	return e ? $(e) : null;
 };
@@ -119,31 +119,31 @@ rmd.app.setShift = function (params) {
 
 rmd.app.closeShift = function() {
 	var body = $(document.body);
-	body.removeClass('view-shift-top');
-	body.removeClass('view-shift-left');
-	body.removeClass('view-shift-right');
+	body.removeClass('mode--layout-shift-top');
+	body.removeClass('mode--layout-shift-left');
+	body.removeClass('mode--layout-shift-right');
 	
 	setTimeout(function() {
-		body.removeClass('view-shift-noscroll-y');
-		body.removeClass('view-shift-viewport');
+		body.removeClass('mode--noscroll-y');
+		//body.removeClass('mode--viewport');
 	}, 700);
 	
 	//$('.layout-shift-body-left-content-container').empty();
 	//$('.layout-shift-body-right-content-container').empty();
 	
-	$(document).trigger('shift.top.close');
-	$(document).trigger('shift.left.close');
-	$(document).trigger('shift.right.close');
+	$(document).trigger('layout.shift.top.close');
+	$(document).trigger('layout.shift.left.close');
+	$(document).trigger('layout.shift.right.close');
 };
 
 $(document).on('ready', function() {
-	// $(document).bind('shift.set', function(e, detail) {
+	// $(document).bind('layout.shift.set', function(e, detail) {
 	// });
 	
-	// $(document).bind('shift.close', function(e, detail) {
+	// $(document).bind('layout.shift.close', function(e, detail) {
 	// });
 	
-	// $(document).bind('shift.afterset', function(e, detail) {
+	// $(document).bind('layout.shift.afterset', function(e, detail) {
 	// });
 
 	if (Hammer) {
@@ -157,11 +157,11 @@ $(document).on('ready', function() {
 
 			var body = $(document.body);
 			if (e.direction == Hammer.DIRECTION_LEFT) {
-				if (body.hasClass('view-shift-left')) {
-					body.removeClass('view-shift-left');
+				if (body.hasClass('mode--layout-shift-left')) {
+					body.removeClass('mode--layout-shift-left');
 					setTimeout(function () {
-						body.removeClass('view-shift-noscroll-y');
-						body.removeClass('view-shift-viewport');
+						body.removeClass('mode--layout-shift-noscroll-y');
+						body.removeClass('mode--layout-shift-viewport');
 					}, 700);
 				}
 				else {
@@ -169,11 +169,11 @@ $(document).on('ready', function() {
 				}
 			}
 			else if (e.direction == Hammer.DIRECTION_RIGHT) {
-				if (body.hasClass('view-shift-right')) {
-					body.removeClass('view-shift-right');
+				if (body.hasClass('mode--layout-shift-right')) {
+					body.removeClass('mode--layout-shift-right');
 					setTimeout(function () {
-						body.removeClass('view-shift-noscroll-y');
-						body.removeClass('view-shift-viewport');
+						body.removeClass('mode--layout-shift-noscroll-y');
+						body.removeClass('mode--layout-shift-viewport');
 					}, 700);
 				}
 				else {
@@ -181,12 +181,12 @@ $(document).on('ready', function() {
 				}
 			}
 			else if (e.direction == Hammer.DIRECTION_UP) {
-				if (body.hasClass('view-shift-top')) {
-					body.removeClass('view-shift-top');
-					body.removeClass('view-map');
+				if (body.hasClass('mode--layout-shift-top')) {
+					body.removeClass('mode--layout-shift-top');
+					body.removeClass('mode--layout-shift-map');
 					setTimeout(function () {
-						body.removeClass('view-shift-noscroll-y');
-						body.removeClass('view-shift-viewport');
+						body.removeClass('mode--layout-shift-noscroll-y');
+						body.removeClass('mode--layout-shift-viewport');
 					}, 700);
 				}
 			}
@@ -497,7 +497,6 @@ rmd.app.session.affirm = function(params, callbacks) {
 		var timeout_minutes = rmd.app.session.current.timeoutIn,
 			timeout_milliseconds = !isNaN(parseInt(timeout_minutes)) ? parseInt(timeout_minutes) * 60 * 1000 : 30 * 60 * 1000,
 			timeout_left_milliseconds = (timeout_milliseconds * 0.25),
-			base_uri = document.baseURI,
 			f = function () {
 
 				rmd.app.session.current.timeoutIds['affirm'] = setTimeout(function () {
