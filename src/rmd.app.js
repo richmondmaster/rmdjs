@@ -1,5 +1,5 @@
 // rmd.app, Thu Jun 28 12:00:00 -0500 2008 / Tue Nov 13 10:00:00 -0500 2018
-// Copyright (c) 2008-2018 Greg Greene
+// Copyright (c) 2008-2023 Greg Greene
 
 // Javascript library for Richmond Masters
 
@@ -10,29 +10,40 @@ rmd.app.session = {};
 rmd.app.session.current = {};
 rmd.app.animate = {};
 rmd.app.refs = {};
+rmd.app.states = {
+	'loading': {},
+	'creating': {},
+	'deleting': {}
+};
+rmd.app.shiftOptions = {
+	left: { enabled: !!window.RMD_APP_OPTION_SWIPE_LEFT, class: 'absolute cover-height absolute-top-left', style: 'width:2rem;opacity:0.0;', toSwipeDirection: Hammer.DIRECTION_RIGHT },
+	right: { enabled: !!window.RMD_APP_OPTION_SWIPE_RIGHT, class: 'absolute cover-height absolute-top-right', style: 'width:2rem;opacity:0.0;', toSwipeDirection: Hammer.DIRECTION_LEFT },
+	top: { enabled: !!window.RMD_APP_OPTION_SWIPE_TOP, class: 'absolute cover-width absolute-top-left', style: 'height:2rem;opacity:0.0;', toSwipeDirection: Hammer.DIRECTION_DOWN },
+	bottom: { enabled: !!window.RMD_APP_OPTION_SWIPE_BOTTOM, class: 'absolute cover-width absolute-bottom-left', style: 'height:2rem;opacity:0.0;', toSwipeDirection: Hammer.DIRECTION_UP }
+};
 
 rmd.app.search = function (params) {
 	$(document).trigger('search', params);
 };
 
-rmd.app.themeize = function (params) {
+rmd.app.applyTheme = function (params) {
 	params = params || {};
 
-	var _el = $(params.element),
+	var el = $(params.element),
 		id = typeof params.id == 'undefined' ? '' : params.id,
 		type = typeof params.type == 'undefined' ? '' : params.type;
 
-	_el.addClass(id + '-theme-' + type.toLowerCase());
+	el.addClass(id + '-theme-' + type.toLowerCase());
 };
 
-rmd.app.unthemeize = function (params) {
+rmd.app.removeTheme = function (params) {
 	params = params || {};
 
-	var _el = $(params.element),
+	var el = $(params.element),
 		id = typeof params.id == 'undefined' ? '' : params.id,
 		type = typeof params.type == 'undefined' ? '' : params.type;
 
-	_el.removeClass(function (index, className) {
+	el.removeClass(function (index, className) {
 		return (className.match('(^|\s)' + id + '-theme-\S+') || []).join(' ');
 	});
 };
@@ -47,55 +58,80 @@ rmd.app.setState = function (params) {
 		state = params.state;
 	}
 
-	if (state == 'LOADING') {
-		body.addClass('app-state-loading');
-		body.addClass('loading');
-		body.modal('show');
-	}
-	else if (state == 'ARTICLE_CREATING') {
-		body.addClass('app-state-article-creating');
-		body.addClass('loading');
-		body.modal('show');
-	}
-	else if (state == 'ARTICLE_UPDATING') {
-		body.addClass('app-state-article-updating');
-		body.addClass('loading');
-		body.modal('show');
-	}
-	else if (state == 'ARTICLE_DELETING') {
-		body.addClass('app-state-article-deleting');
-		body.addClass('loading');
-		body.modal('show');
-	}
-	else if (!state || state == '' || state == 'NORMAL') {
+	if (!state || state == '' || state == 'NORMAL') {
 		body.removeClass('app-state-loading');
-		body.removeClass('app-state-article-creating');
-		body.removeClass('app-state-article-updating');
+		body.removeClass('app-state-creating');
+		body.removeClass('app-state-updating');
+		body.removeClass('app-state-deleting');
 		body.removeClass('loading');
 		body.modal('hide');
+	}
+	else {
+		for(s in rmd.app.states) {
+			if (state == s.toUpperCase()) {
+				body.addClass('app-state-' + s);
+				body.addClass('loading');
+				body.modal('show');
+				break;
+			}
+		}
 	}
 
 	$(document).trigger('setstate', params);
 };
 
+// DEPRECATE
 rmd.app.setShift = function (params) {
+	return rmd.app.setLayoutShift(params);
+};
+
+rmd.app.setLayoutShift = function (params) {
+	params = params || {};
+
 	var e = null, 
-		side = 'left', 
+		direction = Hammer.DIRECTION_LEFT,
+		shift_option = null,
+		side = null,
 		body = $(document.body);
 	
-	params = params || {};
-	
-	if(body.hasClass('mode--layout-shift-left') || body.hasClass('mode--layout-shift-right') || body.hasClass('mode--layout-shift-top') || body.hasClass('mode--map')) {
-		rmd.app.closeShift();
+	if(params.direction) {
+		direction = params.direction;
+	}
+
+	if(RMD_DEBUG) {
+		console.debug('rmd.app.setLayoutShift: ' + direction);
+	}
+
+	for(side in rmd.app.shiftOptions) {
+		if(rmd.app.shiftOptions[side].toSwipeDirection == direction) {
+			shift_option = rmd.app.shiftOptions[side];
+			break;
+		}
+	}
+
+	if(!shift_option) {
+		if(RMD_DEBUG) {
+			console.debug('rmd.app.setLayoutShift: ' + 'shift option not found.'); 
+		}
 		return;
 	}
-	
-	if(params.side) {
-		side = params.side;
+
+	if((body.hasClass('mode--layout-shift-left')) || 
+		(body.hasClass('mode--layout-shift-right')) || 
+		(body.hasClass('mode--layout-shift-top')) || 
+		(body.hasClass('mode--layout-shift-bottom'))
+	) {
+		rmd.app.closeShift();
+		setTimeout(function () {
+			document.body.classList.remove('mode--layout-shift-noscroll-y');
+			document.body.classList.remove('mode--layout-shift-viewport');
+		}, 700);
 	}
 	
 	if(params.e) {
-		console.debug(JSON.stringify(params));
+		if(RMD_DEBUG) {
+			console.debug(JSON.stringify(params));
+		}
 		
 		e = $(params.e);
 		e.detach();
@@ -108,7 +144,6 @@ rmd.app.setShift = function (params) {
 	}
 	
 	body.addClass('mode--noscroll-y');
-	//body.addClass('mode--viewport');
 	body.addClass('mode--layout-shift-' + side);
 	
 	$(document).trigger('layout.shift.' + side + '.afterset');
@@ -116,27 +151,23 @@ rmd.app.setShift = function (params) {
 	return e ? $(e) : null;
 };
 
-
 rmd.app.closeShift = function() {
-	var body = $(document.body);
-	body.removeClass('mode--layout-shift-top');
-	body.removeClass('mode--layout-shift-left');
-	body.removeClass('mode--layout-shift-right');
-	
+	for(var side in rmd.app.shiftOptions) {
+		document.body.classList.remove('mode--layout-shift-' + side);
+		$(document).trigger('layout.shift.' + side + '.close');
+	}
+
 	setTimeout(function() {
-		body.removeClass('mode--noscroll-y');
-		//body.removeClass('mode--viewport');
+		document.body.classList.remove('mode--noscroll-y');
 	}, 700);
-	
-	//$('.layout-shift-body-left-content-container').empty();
-	//$('.layout-shift-body-right-content-container').empty();
-	
-	$(document).trigger('layout.shift.top.close');
-	$(document).trigger('layout.shift.left.close');
-	$(document).trigger('layout.shift.right.close');
 };
 
+
 $(document).on('ready', function() {
+	var e = null,
+		opt = null,
+		direction = '';
+
 	// $(document).bind('layout.shift.set', function(e, detail) {
 	// });
 	
@@ -146,52 +177,63 @@ $(document).on('ready', function() {
 	// $(document).bind('layout.shift.afterset', function(e, detail) {
 	// });
 
+	// NOTE: Official modes for rmd-base-layout:
+	// .mode--layout-shift-left
+	// .mode--layout-shift-right
+	// .mode--layout-shift-top
+	// .mode--layout-shift-bottom
+
 	if (Hammer) {
-
 		rmd.app.refs.hammertime = {};
-		rmd.app.refs.hammertime['body'] = new Hammer(document.body);
-		rmd.app.refs.hammertime['body'].on('swipe', function (e) {
-
-			if (!rmd.userAgent.isMobile())
-				return;
-
-			var body = $(document.body);
-			if (e.direction == Hammer.DIRECTION_LEFT) {
-				if (body.hasClass('mode--layout-shift-left')) {
-					body.removeClass('mode--layout-shift-left');
-					setTimeout(function () {
-						body.removeClass('mode--layout-shift-noscroll-y');
-						body.removeClass('mode--layout-shift-viewport');
-					}, 700);
-				}
-				else {
-					rmd.app.setShift({ side: 'right' });
-				}
-			}
-			else if (e.direction == Hammer.DIRECTION_RIGHT) {
-				if (body.hasClass('mode--layout-shift-right')) {
-					body.removeClass('mode--layout-shift-right');
-					setTimeout(function () {
-						body.removeClass('mode--layout-shift-noscroll-y');
-						body.removeClass('mode--layout-shift-viewport');
-					}, 700);
-				}
-				else {
-					//rmd.app.setShift({side:'left'});
-				}
-			}
-			else if (e.direction == Hammer.DIRECTION_UP) {
-				if (body.hasClass('mode--layout-shift-top')) {
-					body.removeClass('mode--layout-shift-top');
-					body.removeClass('mode--layout-shift-map');
-					setTimeout(function () {
-						body.removeClass('mode--layout-shift-noscroll-y');
-						body.removeClass('mode--layout-shift-viewport');
-					}, 700);
-				}
-			}
-		});
 	}
+
+	rmd.app.refs.hammertime['swipe-any'] = new Hammer(window);
+	rmd.app.refs.hammertime['swipe-any'].on('swipe', function(e) {
+		if (RMD_APP_OPTION_SWIPE_MOBILEONLY && !rmd.userAgent.isMobile()) {
+			return;
+		}
+		
+		if(RMD_DEBUG) {
+			console.debug('swiped any: ' + e.direction);
+		}
+
+		rmd.app.closeShift();
+	});
+
+	if(RMD_APP_OPTION_SWIPE_LEFT || 
+		RMD_APP_OPTION_SWIPE_RIGHT || 
+		RMD_APP_OPTION_SWIPE_TOP ||
+		RMD_APP_OPTION_SWIPE_BOTTOM) {
+
+		for(side in rmd.app.shiftOptions) {
+			opt = rmd.app.shiftOptions[side];
+
+			if(!opt.enabled) {
+				continue;
+			}
+
+			if(RMD_DEBUG) {
+				console.debug('adding swipe handler: ' + side);
+			}
+
+			e = document.body.appendChild(document.createElement('DIV'));
+			e.className = opt.class;
+			e.style = opt.style;
+
+			rmd.app.refs.hammertime['swipe-' + side] = new Hammer(e);
+			rmd.app.refs.hammertime['swipe-' + side].on('swipe', function(e) {
+				if (RMD_APP_OPTION_SWIPE_MOBILEONLY && !rmd.userAgent.isMobile()) {
+					return;
+				}
+				
+				if(RMD_DEBUG) {
+					console.debug('swiped: ' + e.direction);
+				}
+
+				rmd.app.setLayoutShift({ direction: e.direction });
+			});
+		};
+	}	
 });
 
 rmd.app.animate.onOff = function(ids, animation_id) {
@@ -251,82 +293,6 @@ rmd.app.dialogOk = function (e, f_ok, f_cancel) {
 	d.dialog("option", "buttons", buttons);
 
 	return d;
-};
-
-rmd.app.showAbout = function () {
-	var _w = $(window),
-		_body = $(document.body),
-		about = $('#site_about'),
-		object = $('#site_about_body_content_object'),
-		panel = null,
-		callback_click = null,
-		background_color = '#fff',
-		svg = '',
-		svg_data_path = object.attr('data');
-
-
-	if (_body.hasClass('IE11')) {
-		//svg = rmd.fetchContent(object.attr('data'));
-		//console.debug(svg);
-		//object.html('');
-		//object.attr('data', object.attr('data'));
-		//setTimeout(function() {
-		//	object.html(svg);
-		//}, 1000);
-
-		object.attr('data', '');
-		object.html('');
-
-		setTimeout(function () {
-			object.attr('data', svg_data_path);
-		}, 100);
-	}
-	else {
-
-	}
-
-	about.removeClass('hide');
-	panel = about.panel({ id: 'about', mode: 'dialog' });
-
-	panel.css('max-width', '375px');
-	panel.addClass('shadowed');
-	panel.removeClass('hide');
-
-	_w.on('resize scroll', function () {
-		panel.css('top', (_w.height() / 2) - (panel.height() / 2) + $(document).scrollTop() - 75 + 'px');
-		panel.css('left', (_w.width() / 2) - (panel.width() / 2) + 'px');
-	});
-
-	_w.trigger('resize');
-
-	callback_click = function (e) {
-		e.stopPropagation();
-		about.addClass('hide');
-		panel.modal('hide');
-		panel.addClass('hide');
-		$('#site_overlay').css('background-color', background_color);
-		about.detach().appendTo(_body);
-		panel.remove();
-	};
-
-	panel.modal({
-		state: 'show',
-		bindTo: false,
-		eventCallbacks: {
-			'click': callback_click
-		}
-	});
-
-	background_color = $('#site_overlay').css('background-color');
-	$('#site_overlay').css('background-color', '#555');
-
-	object.on('click', callback_click);
-	panel.on('click', callback_click);
-	$('#site_about_body_content').on('click', callback_click);
-
-	//rmd.app.closeFlex();
-
-	return panel;
 };
 
 rmd.app.notifyTape = function (message) {
@@ -538,6 +504,4 @@ rmd.app.session.affirm = function(params, callbacks) {
 
 		f();
 	}
-	
-	
 };

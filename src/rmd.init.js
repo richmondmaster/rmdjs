@@ -1,5 +1,5 @@
 // rmd.init
-// Copyright (c) 2008-2022 Greg Greene
+// Copyright (c) 2008-2023 Greg Greene
 
 // Javascript library for Richmond Masters
 
