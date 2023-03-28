@@ -275,10 +275,20 @@ rmd.app.setLayoutShift = function (params) {
 		direction = Hammer.DIRECTION_LEFT,
 		shift_option = null,
 		side = null,
-		body = $(document.body);
-	
+		body = $(document.body),
+		directions = { 
+			'left': Hammer.DIRECTION_LEFT,
+			'right': Hammer.DIRECTION_RIGHT,
+			'up': Hammer.DIRECTION_UP,
+			'down': Hammer.DIRECTION_DOWN
+		};
+
 	if(params.direction) {
 		direction = params.direction;
+	}
+
+	if(!isNaN(parseInt(direction))) {
+		direction = directions[direction];
 	}
 
 	if(RMD_DEBUG) {
