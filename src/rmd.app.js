@@ -263,9 +263,36 @@ rmd.app.setState = function (params) {
 	$(document).trigger('setstate', params);
 };
 
-// DEPRECATE
-rmd.app.setShift = function (params) {
-	return rmd.app.setLayoutShift(params);
+rmd.app.directionToNumber = function(direction) {
+
+	direction??= 0;
+
+	directions = { 
+		'left': Hammer.DIRECTION_LEFT,
+		'right': Hammer.DIRECTION_RIGHT,
+		'up': Hammer.DIRECTION_UP,
+		'down': Hammer.DIRECTION_DOWN
+	};
+
+	return isNaN(parseInt(direction)) ? directions[direction] : direction;
+}
+
+rmd.app.toggleLayoutShift = function(params) {
+	params = params || {};
+
+	if((body.hasClass('mode--layout-shift-left')) || 
+		(body.hasClass('mode--layout-shift-right')) || 
+		(body.hasClass('mode--layout-shift-top')) || 
+		(body.hasClass('mode--layout-shift-bottom'))
+		) {
+			rmd.app.closeShift(params);
+			setTimeout(function () {
+				document.body.classList.remove('mode--layout-shift-noscroll-y');
+			}, 700);
+		}
+		else {
+			rmd.app.setLayoutShift(params);
+		}
 };
 
 rmd.app.setLayoutShift = function (params) {
@@ -275,21 +302,13 @@ rmd.app.setLayoutShift = function (params) {
 		direction = Hammer.DIRECTION_LEFT,
 		shift_option = null,
 		side = null,
-		body = $(document.body),
-		directions = { 
-			'left': Hammer.DIRECTION_LEFT,
-			'right': Hammer.DIRECTION_RIGHT,
-			'up': Hammer.DIRECTION_UP,
-			'down': Hammer.DIRECTION_DOWN
-		};
+		body = $(document.body);
 
 	if(params.direction) {
 		direction = params.direction;
 	}
 
-	if(isNaN(parseInt(direction))) {
-		direction = directions[direction];
-	}
+	direction = rmd.app.directionToNumber(direction);
 
 	if(RMD_DEBUG) {
 		console.debug('rmd.app.setLayoutShift (params): ' + JSON.stringify(params));
@@ -309,18 +328,6 @@ rmd.app.setLayoutShift = function (params) {
 		}
 		return;
 	}
-
-	// if((body.hasClass('mode--layout-shift-left')) || 
-	// 	(body.hasClass('mode--layout-shift-right')) || 
-	// 	(body.hasClass('mode--layout-shift-top')) || 
-	// 	(body.hasClass('mode--layout-shift-bottom'))
-	// ) {
-	// 	rmd.app.closeShift();
-	// 	setTimeout(function () {
-	// 		document.body.classList.remove('mode--layout-shift-noscroll-y');
-	// 		document.body.classList.remove('mode--layout-shift-viewport');
-	// 	}, 700);
-	// }
 	
 	if(params.e) {
 		if(RMD_DEBUG) {
@@ -352,7 +359,7 @@ rmd.app.setLayoutShift = function (params) {
 rmd.app.closeShift = function(params) {
 	params = params || {};
 
-	var direction = params.direction ?? null,
+	var direction = rmd.app.directionToNumber(params.direction) ?? null,
 		side = (function() { for(side in rmd.app.shiftOptions) { if(rmd.app.shiftOptions[side].toSwipeDirection == direction) { return side; } } })(),
 		f = function() {
 			document.body.classList.remove('mode--layout-shift-' + side);
