@@ -287,7 +287,7 @@ rmd.app.setLayoutShift = function (params) {
 		direction = params.direction;
 	}
 
-	if(!isNaN(parseInt(direction))) {
+	if(isNaN(parseInt(direction))) {
 		direction = directions[direction];
 	}
 
