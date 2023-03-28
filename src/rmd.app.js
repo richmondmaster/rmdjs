@@ -15,11 +15,192 @@ rmd.app.states = {
 	'creating': {},
 	'deleting': {}
 };
+
+window.RMD_APP_OPTION_SWIPE_LEFT ??= false;
+window.RMD_APP_OPTION_SWIPE_RIGHT ??= false;
+window.RMD_APP_OPTION_SWIPE_TOP ??= false;
+window.RMD_APP_OPTION_SWIPE_BOTTOM ??= false;
+
+window.RMD_APP_OPTION_SWIPE_REVERSE_ANY ??= false;
+
+window.RMD_APP_OPTION_SWIPE_LEFT_REVERSE ??= RMD_APP_OPTION_SWIPE_LEFT;
+window.RMD_APP_OPTION_SWIPE_RIGHT_REVERSE ??= RMD_APP_OPTION_SWIPE_RIGHT;
+window.RMD_APP_OPTION_SWIPE_TOP_REVERSE ??= RMD_APP_OPTION_SWIPE_TOP;
+window.RMD_APP_OPTION_SWIPE_BOTTOM_REVERSE ??= RMD_APP_OPTION_SWIPE_BOTTOM;
+
+window.RMD_APP_OPTION_SWIPE_LEFT_SWIPEAREA ??= false;
+window.RMD_APP_OPTION_SWIPE_RIGHT_SWIPEAREA ??= false;
+window.RMD_APP_OPTION_SWIPE_TOP_SWIPEAREA ??= false;
+window.RMD_APP_OPTION_SWIPE_BOTTOM_SWIPEAREA ??= false;
+
+window.RMD_APP_MAX_SWIPE_AREA_WIDTH = (16 * 3) * 5; // 1rem = 16px * 3 = 48px (* 3 for extra swipe area)
+window.RMD_APP_MAX_SWIPE_AREA_HEIGHT = (16 * 3) * 5;
+
 rmd.app.shiftOptions = {
-	left: { enabled: !!window.RMD_APP_OPTION_SWIPE_LEFT, class: 'absolute cover-height absolute-top-left', style: 'width:2rem;opacity:0.0;', toSwipeDirection: Hammer.DIRECTION_RIGHT },
-	right: { enabled: !!window.RMD_APP_OPTION_SWIPE_RIGHT, class: 'absolute cover-height absolute-top-right', style: 'width:2rem;opacity:0.0;', toSwipeDirection: Hammer.DIRECTION_LEFT },
-	top: { enabled: !!window.RMD_APP_OPTION_SWIPE_TOP, class: 'absolute cover-width absolute-top-left', style: 'height:2rem;opacity:0.0;', toSwipeDirection: Hammer.DIRECTION_DOWN },
-	bottom: { enabled: !!window.RMD_APP_OPTION_SWIPE_BOTTOM, class: 'absolute cover-width absolute-bottom-left', style: 'height:2rem;opacity:0.0;', toSwipeDirection: Hammer.DIRECTION_UP }
+	left: {
+		side: 'left',
+		enabled: RMD_APP_OPTION_SWIPE_LEFT,
+		handler: function (e) { if (e.direction != Hammer.DIRECTION_LEFT) { return; } RMD_APP_SWIPE_HANDLER(e); },
+		reverse: {
+			enabled: RMD_APP_OPTION_SWIPE_LEFT_REVERSE,
+			handler: function (e) { if (e.direction != Hammer.DIRECTION_LEFT) { return; } RMD_APP_SWIPE_REVERSE_HANDLER(e); },
+			toSwipeDirection: Hammer.DIRECTION_LEFT
+		},
+		swipeArea: {
+			enabled: RMD_APP_OPTION_SWIPE_LEFT_SWIPEAREA,
+			area: { top: function () { return 0; }, left: function () { return 0; }, width: function () { return RMD_APP_MAX_SWIPE_AREA_WIDTH; }, height: function () { return window.innerHeight; } }, 
+			class: 'absolute cover-height absolute-top-left', 
+			style: 'width:2rem;opacity:0.0;'
+		},
+		toSwipeDirection: Hammer.DIRECTION_RIGHT
+	},
+	right: {
+		side: 'right', enabled: RMD_APP_OPTION_SWIPE_RIGHT, handler: function (e) { if (e.direction != Hammer.DIRECTION_RIGHT) { return; } RMD_APP_SWIPE_HANDLER(e); },
+		reverse: {
+			enabled: RMD_APP_OPTION_SWIPE_RIGHT_REVERSE,
+			handler: function (e) { if (e.direction != Hammer.DIRECTION_RIGHT) { return; } RMD_APP_SWIPE_REVERSE_HANDLER(e); },
+			toSwipeDirection: Hammer.DIRECTION_RIGHT
+		},
+		swipeArea: {
+			enabled: RMD_APP_OPTION_SWIPE_RIGHT_SWIPEAREA,
+			area: { top: function () { return 0; }, left: function () { return window.innerWidth - RMD_APP_MAX_SWIPE_AREA_WIDTH; }, width: function () { return RMD_APP_MAX_SWIPE_AREA_WIDTH; }, height: function () { return window.innerHeight; } }, 
+			class: 'absolute cover-height absolute-top-right', 
+			style: 'width:2rem;opacity:0.0;'
+		},
+		toSwipeDirection: Hammer.DIRECTION_LEFT
+	},
+	top: { 
+		side: 'top', 
+		enabled: RMD_APP_OPTION_SWIPE_TOP, 
+		handler: function (e) { if (e.direction != Hammer.DIRECTION_UP) { return; } RMD_APP_SWIPE_HANDLER(e); }, 
+		reverse: { 
+			enabled: RMD_APP_OPTION_SWIPE_TOP_REVERSE, 
+			handler: function (e) { if (e.direction != Hammer.DIRECTION_UP) { return; } RMD_APP_SWIPE_REVERSE_HANDLER(e); }, 
+			toSwipeDirection: Hammer.DIRECTION_UP 
+		},
+			swipeArea: { 
+				enabled: RMD_APP_OPTION_SWIPE_TOP_SWIPEAREA, 
+				area: { top: function () { return 0; }, left: function () { return 0; }, width: function () { return window.innerWidth; }, height: function () { return RMD_APP_MAX_SWIPE_AREA_HEIGHT; } }, 
+				class: 'absolute cover-width absolute-top-left', 
+				style: 'height:2rem;opacity:0.0;' 
+			}, 
+			toSwipeDirection: Hammer.DIRECTION_DOWN 
+	},
+	bottom: { 
+		side: 'bottom', 
+		enabled: RMD_APP_OPTION_SWIPE_BOTTOM, 
+		handler: function (e) { if (e.direction != Hammer.DIRECTION_DOWN) { return; } RMD_APP_SWIPE_HANDLER(e); }, 
+		reverse: { 
+			enabled: RMD_APP_OPTION_SWIPE_BOTTOM_REVERSE, 
+			handler: function (e) { if (e.direction != Hammer.DIRECTION_DOWN) { return; } RMD_APP_SWIPE_REVERSE_HANDLER(e); }, 
+			toSwipeDirection: Hammer.DIRECTION_DOWN 
+		}, 
+		swipeArea: { 
+			enabled: RMD_APP_OPTION_SWIPE_BOTTOM_SWIPEAREA, 
+			area: { top: function () { return window.innerHeight - RMD_APP_MAX_SWIPE_AREA_HEIGHT; }, left: function () { return 0; }, width: function () { return window.innerWidth; }, height: function () { return RMD_APP_MAX_SWIPE_AREA_HEIGHT; } }, 
+			class: 'absolute cover-width absolute-bottom-left', 
+			style: 'height:2rem;opacity:0.0;' 
+		}, 
+		toSwipeDirection: Hammer.DIRECTION_UP 
+	}
+};
+
+window.RMD_APP_SWIPE_REVERSE_HANDLER = function(e) {
+	var opt = null,
+		side = null;
+
+	if(RMD_DEBUG) {
+		console.debug('reverse: ' + e.direction);
+	}
+
+	if (RMD_APP_OPTION_SWIPE_MOBILEONLY && !rmd.userAgent.isMobile()) {
+		return;
+	}
+	
+	if(RMD_DEBUG) {
+		console.debug('swiped reverse: ' + e.direction);
+	}
+
+	for(side in rmd.app.shiftOptions) {
+		if(rmd.app.shiftOptions[side].reverse.toSwipeDirection == e.direction) {
+			opt = rmd.app.shiftOptions[side];
+			break;
+		}
+	}
+
+	if(!opt) {
+		return;
+	}
+
+	rmd.app.closeShift({ direction: opt.direction });
+
+	setTimeout(function() {
+		if(RMD_DEBUG) {
+			console.debug('reverse swipe handler deleted (' + side + ')');
+		}
+		rmd.app.refs.hammertime['swipe-' + side + '-reverse'].off('swipe', RMD_APP_SWIPE_REVERSE_HANDLER);
+		delete rmd.app.refs.hammertime['swipe-' + side + '-reverse'];
+	}, 300);
+};
+
+window.RMD_APP_SWIPE_HANDLER = function(e) {
+	var opt = null,
+		side = null,
+		area = null;
+
+	if (RMD_APP_OPTION_SWIPE_MOBILEONLY && !rmd.userAgent.isMobile()) {
+		return;
+	}
+	
+	if(RMD_DEBUG) {
+		console.debug('swiped: ' + e.direction);
+	}
+
+	for(side in rmd.app.shiftOptions) {
+		if(rmd.app.shiftOptions[side].toSwipeDirection == e.direction) {
+			opt = rmd.app.shiftOptions[side];
+			area = opt.swipeArea.area;
+			break;
+		}
+	}
+
+	if(!opt) {
+		return;
+	}
+
+	if(RMD_DEBUG) {
+		console.debug('side: ' + side);
+		// console.debug('area left: (' + area.left() + ',' + (area.left() + area.width()) + ')');
+		// console.debug('area top: (' + area.top() + ',' + (area.top() + area.height()) + ')');
+		// console.debug('mouse coord: ' + JSON.stringify(e.center));
+	}
+
+	if(
+		!(e.center.x >= area.left() && e.center.x <= area.left() + area.width()) &&
+		(e.center.y >= area.top() && e.center.y <= area.top() + area.height())
+	) {
+		if(RMD_APP_OPTION_SWIPE_REVERSE_ANY) {
+			rmd.app.closeShift();
+		}
+		return;
+	}
+
+	if(RMD_DEBUG) {
+		console.debug(e);
+		console.debug(area);
+	}
+
+	if(opt.reverse.enabled) {
+		setTimeout(function() {
+			if(RMD_DEBUG) {
+				console.debug('reverse swipe handler added: ' + side);
+			}
+			rmd.app.refs.hammertime['swipe-' + side + '-reverse'] = new Hammer(window);
+			rmd.app.refs.hammertime['swipe-' + side + '-reverse'].on('swipe', opt.reverse.handler);
+		}, 300);
+	}
+
+	rmd.app.setLayoutShift({ direction: e.direction });
 };
 
 rmd.app.search = function (params) {
@@ -99,6 +280,7 @@ rmd.app.setLayoutShift = function (params) {
 	}
 
 	if(RMD_DEBUG) {
+		console.debug('rmd.app.setLayoutShift (params): ' + JSON.stringify(params));
 		console.debug('rmd.app.setLayoutShift: ' + direction);
 	}
 
@@ -116,17 +298,17 @@ rmd.app.setLayoutShift = function (params) {
 		return;
 	}
 
-	if((body.hasClass('mode--layout-shift-left')) || 
-		(body.hasClass('mode--layout-shift-right')) || 
-		(body.hasClass('mode--layout-shift-top')) || 
-		(body.hasClass('mode--layout-shift-bottom'))
-	) {
-		rmd.app.closeShift();
-		setTimeout(function () {
-			document.body.classList.remove('mode--layout-shift-noscroll-y');
-			document.body.classList.remove('mode--layout-shift-viewport');
-		}, 700);
-	}
+	// if((body.hasClass('mode--layout-shift-left')) || 
+	// 	(body.hasClass('mode--layout-shift-right')) || 
+	// 	(body.hasClass('mode--layout-shift-top')) || 
+	// 	(body.hasClass('mode--layout-shift-bottom'))
+	// ) {
+	// 	rmd.app.closeShift();
+	// 	setTimeout(function () {
+	// 		document.body.classList.remove('mode--layout-shift-noscroll-y');
+	// 		document.body.classList.remove('mode--layout-shift-viewport');
+	// 	}, 700);
+	// }
 	
 	if(params.e) {
 		if(RMD_DEBUG) {
@@ -142,6 +324,10 @@ rmd.app.setLayoutShift = function (params) {
 			e.addClass('hide');
 		});
 	}
+
+	if(RMD_DEBUG) {
+		console.debug('rmd.app.setLayoutShift (side): ' + side);
+	}
 	
 	body.addClass('mode--noscroll-y');
 	body.addClass('mode--layout-shift-' + side);
@@ -151,11 +337,17 @@ rmd.app.setLayoutShift = function (params) {
 	return e ? $(e) : null;
 };
 
-rmd.app.closeShift = function() {
-	for(var side in rmd.app.shiftOptions) {
-		document.body.classList.remove('mode--layout-shift-' + side);
-		$(document).trigger('layout.shift.' + side + '.close');
-	}
+rmd.app.closeShift = function(params) {
+	params = params || {};
+
+	var direction = params.direction ?? null,
+		side = (function() { for(side in rmd.app.shiftOptions) { if(rmd.app.shiftOptions[side].toSwipeDirection == direction) { return side; } } })(),
+		f = function() {
+			document.body.classList.remove('mode--layout-shift-' + side);
+			$(document).trigger('layout.shift.' + side + '.close');
+		};
+
+	side ? f() : (function() { for(side in rmd.app.shiftOptions) { f(); } })();
 
 	setTimeout(function() {
 		document.body.classList.remove('mode--noscroll-y');
@@ -187,18 +379,18 @@ $(document).on('ready', function() {
 		rmd.app.refs.hammertime = {};
 	}
 
-	rmd.app.refs.hammertime['swipe-any'] = new Hammer(window);
-	rmd.app.refs.hammertime['swipe-any'].on('swipe', function(e) {
-		if (RMD_APP_OPTION_SWIPE_MOBILEONLY && !rmd.userAgent.isMobile()) {
-			return;
-		}
+	// rmd.app.refs.hammertime['swipe-any'] = new Hammer(window);
+	// rmd.app.refs.hammertime['swipe-any'].on('swipe', function(e) {
+	// 	if (RMD_APP_OPTION_SWIPE_MOBILEONLY && !rmd.userAgent.isMobile()) {
+	// 		return;
+	// 	}
 		
-		if(RMD_DEBUG) {
-			console.debug('swiped any: ' + e.direction);
-		}
+	// 	if(RMD_DEBUG) {
+	// 		console.debug('swiped any: ' + e.direction);
+	// 	}
 
-		rmd.app.closeShift();
-	});
+	// 	// rmd.app.closeShift();
+	// });
 
 	if(RMD_APP_OPTION_SWIPE_LEFT || 
 		RMD_APP_OPTION_SWIPE_RIGHT || 
@@ -216,22 +408,22 @@ $(document).on('ready', function() {
 				console.debug('adding swipe handler: ' + side);
 			}
 
-			e = document.body.appendChild(document.createElement('DIV'));
-			e.className = opt.class;
-			e.style = opt.style;
+			if(opt.swipeArea.enabled) {
+				e = document.body.appendChild(document.createElement('DIV'));
+				e.className = opt.class;
+				e.style = opt.style;
+			}
+			else {
+				e = window;
+			}
+
+			if('swipe-' + side in rmd.app.refs.hammertime) {
+				continue;
+			}
 
 			rmd.app.refs.hammertime['swipe-' + side] = new Hammer(e);
-			rmd.app.refs.hammertime['swipe-' + side].on('swipe', function(e) {
-				if (RMD_APP_OPTION_SWIPE_MOBILEONLY && !rmd.userAgent.isMobile()) {
-					return;
-				}
-				
-				if(RMD_DEBUG) {
-					console.debug('swiped: ' + e.direction);
-				}
+			rmd.app.refs.hammertime['swipe-' + side].on('swipe', opt.handler);
 
-				rmd.app.setLayoutShift({ direction: e.direction });
-			});
 		};
 	}	
 });
