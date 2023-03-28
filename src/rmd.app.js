@@ -18,20 +18,20 @@ rmd.app.states = {
 
 window.RMD_APP_OPTION_SWIPE_LEFT ??= false;
 window.RMD_APP_OPTION_SWIPE_RIGHT ??= false;
-window.RMD_APP_OPTION_SWIPE_TOP ??= false;
-window.RMD_APP_OPTION_SWIPE_BOTTOM ??= false;
+window.RMD_APP_OPTION_SWIPE_UP ??= false;
+window.RMD_APP_OPTION_SWIPE_DOWN ??= false;
 
 window.RMD_APP_OPTION_SWIPE_REVERSE_ANY ??= false;
 
 window.RMD_APP_OPTION_SWIPE_LEFT_REVERSE ??= RMD_APP_OPTION_SWIPE_LEFT;
 window.RMD_APP_OPTION_SWIPE_RIGHT_REVERSE ??= RMD_APP_OPTION_SWIPE_RIGHT;
-window.RMD_APP_OPTION_SWIPE_TOP_REVERSE ??= RMD_APP_OPTION_SWIPE_TOP;
-window.RMD_APP_OPTION_SWIPE_BOTTOM_REVERSE ??= RMD_APP_OPTION_SWIPE_BOTTOM;
+window.RMD_APP_OPTION_SWIPE_UP_REVERSE ??= RMD_APP_OPTION_SWIPE_UP;
+window.RMD_APP_OPTION_SWIPE_DOWN_REVERSE ??= RMD_APP_OPTION_SWIPE_DOWN;
 
 window.RMD_APP_OPTION_SWIPE_LEFT_SWIPEAREA ??= false;
 window.RMD_APP_OPTION_SWIPE_RIGHT_SWIPEAREA ??= false;
-window.RMD_APP_OPTION_SWIPE_TOP_SWIPEAREA ??= false;
-window.RMD_APP_OPTION_SWIPE_BOTTOM_SWIPEAREA ??= false;
+window.RMD_APP_OPTION_SWIPE_UP_SWIPEAREA ??= false;
+window.RMD_APP_OPTION_SWIPE_DOWN_SWIPEAREA ??= false;
 
 window.RMD_APP_MAX_SWIPE_AREA_WIDTH = (16 * 3) * 5; // 1rem = 16px * 3 = 48px (* 3 for extra swipe area)
 window.RMD_APP_MAX_SWIPE_AREA_HEIGHT = (16 * 3) * 5;
@@ -39,15 +39,15 @@ window.RMD_APP_MAX_SWIPE_AREA_HEIGHT = (16 * 3) * 5;
 rmd.app.shiftOptions = {
 	left: {
 		side: 'left',
-		enabled: RMD_APP_OPTION_SWIPE_LEFT,
-		handler: function (e) { if (e.direction != Hammer.DIRECTION_LEFT) { return; } RMD_APP_SWIPE_HANDLER(e); },
+		enabled: RMD_APP_OPTION_SWIPE_RIGHT,
+		handler: function (e) { if (e.direction != Hammer.DIRECTION_RIGHT) { return; } RMD_APP_SWIPE_HANDLER(e); },
 		reverse: {
-			enabled: RMD_APP_OPTION_SWIPE_LEFT_REVERSE,
+			enabled: RMD_APP_OPTION_SWIPE_RIGHT_REVERSE,
 			handler: function (e) { if (e.direction != Hammer.DIRECTION_LEFT) { return; } RMD_APP_SWIPE_REVERSE_HANDLER(e); },
 			toSwipeDirection: Hammer.DIRECTION_LEFT
 		},
 		swipeArea: {
-			enabled: RMD_APP_OPTION_SWIPE_LEFT_SWIPEAREA,
+			enabled: RMD_APP_OPTION_SWIPE_RIGHT_SWIPEAREA,
 			area: { top: function () { return 0; }, left: function () { return 0; }, width: function () { return RMD_APP_MAX_SWIPE_AREA_WIDTH; }, height: function () { return window.innerHeight; } }, 
 			class: 'absolute cover-height absolute-top-left', 
 			style: 'width:2rem;opacity:0.0;'
@@ -55,14 +55,16 @@ rmd.app.shiftOptions = {
 		toSwipeDirection: Hammer.DIRECTION_RIGHT
 	},
 	right: {
-		side: 'right', enabled: RMD_APP_OPTION_SWIPE_RIGHT, handler: function (e) { if (e.direction != Hammer.DIRECTION_RIGHT) { return; } RMD_APP_SWIPE_HANDLER(e); },
+		side: 'right', 
+		enabled: RMD_APP_OPTION_SWIPE_LEFT, 
+		handler: function (e) { if (e.direction != Hammer.DIRECTION_LEFT) { return; } RMD_APP_SWIPE_HANDLER(e); },
 		reverse: {
 			enabled: RMD_APP_OPTION_SWIPE_RIGHT_REVERSE,
 			handler: function (e) { if (e.direction != Hammer.DIRECTION_RIGHT) { return; } RMD_APP_SWIPE_REVERSE_HANDLER(e); },
 			toSwipeDirection: Hammer.DIRECTION_RIGHT
 		},
 		swipeArea: {
-			enabled: RMD_APP_OPTION_SWIPE_RIGHT_SWIPEAREA,
+			enabled: RMD_APP_OPTION_SWIPE_LEFT_SWIPEAREA,
 			area: { top: function () { return 0; }, left: function () { return window.innerWidth - RMD_APP_MAX_SWIPE_AREA_WIDTH; }, width: function () { return RMD_APP_MAX_SWIPE_AREA_WIDTH; }, height: function () { return window.innerHeight; } }, 
 			class: 'absolute cover-height absolute-top-right', 
 			style: 'width:2rem;opacity:0.0;'
@@ -71,15 +73,15 @@ rmd.app.shiftOptions = {
 	},
 	top: { 
 		side: 'top', 
-		enabled: RMD_APP_OPTION_SWIPE_TOP, 
-		handler: function (e) { if (e.direction != Hammer.DIRECTION_UP) { return; } RMD_APP_SWIPE_HANDLER(e); }, 
+		enabled: RMD_APP_OPTION_SWIPE_DOWN, 
+		handler: function (e) { if (e.direction != Hammer.DIRECTION_DOWN) { return; } RMD_APP_SWIPE_HANDLER(e); }, 
 		reverse: { 
-			enabled: RMD_APP_OPTION_SWIPE_TOP_REVERSE, 
+			enabled: RMD_APP_OPTION_SWIPE_DOWN_REVERSE, 
 			handler: function (e) { if (e.direction != Hammer.DIRECTION_UP) { return; } RMD_APP_SWIPE_REVERSE_HANDLER(e); }, 
 			toSwipeDirection: Hammer.DIRECTION_UP 
 		},
 			swipeArea: { 
-				enabled: RMD_APP_OPTION_SWIPE_TOP_SWIPEAREA, 
+				enabled: RMD_APP_OPTION_SWIPE_DOWN_SWIPEAREA, 
 				area: { top: function () { return 0; }, left: function () { return 0; }, width: function () { return window.innerWidth; }, height: function () { return RMD_APP_MAX_SWIPE_AREA_HEIGHT; } }, 
 				class: 'absolute cover-width absolute-top-left', 
 				style: 'height:2rem;opacity:0.0;' 
@@ -88,15 +90,15 @@ rmd.app.shiftOptions = {
 	},
 	bottom: { 
 		side: 'bottom', 
-		enabled: RMD_APP_OPTION_SWIPE_BOTTOM, 
-		handler: function (e) { if (e.direction != Hammer.DIRECTION_DOWN) { return; } RMD_APP_SWIPE_HANDLER(e); }, 
+		enabled: RMD_APP_OPTION_SWIPE_UP, 
+		handler: function (e) { if (e.direction != Hammer.DIRECTION_UP) { return; } RMD_APP_SWIPE_HANDLER(e); }, 
 		reverse: { 
-			enabled: RMD_APP_OPTION_SWIPE_BOTTOM_REVERSE, 
+			enabled: RMD_APP_OPTION_SWIPE_UP_REVERSE, 
 			handler: function (e) { if (e.direction != Hammer.DIRECTION_DOWN) { return; } RMD_APP_SWIPE_REVERSE_HANDLER(e); }, 
 			toSwipeDirection: Hammer.DIRECTION_DOWN 
 		}, 
 		swipeArea: { 
-			enabled: RMD_APP_OPTION_SWIPE_BOTTOM_SWIPEAREA, 
+			enabled: RMD_APP_OPTION_SWIPE_UP_SWIPEAREA, 
 			area: { top: function () { return window.innerHeight - RMD_APP_MAX_SWIPE_AREA_HEIGHT; }, left: function () { return 0; }, width: function () { return window.innerWidth; }, height: function () { return RMD_APP_MAX_SWIPE_AREA_HEIGHT; } }, 
 			class: 'absolute cover-width absolute-bottom-left', 
 			style: 'height:2rem;opacity:0.0;' 
@@ -394,8 +396,8 @@ $(document).on('ready', function() {
 
 	if(RMD_APP_OPTION_SWIPE_LEFT || 
 		RMD_APP_OPTION_SWIPE_RIGHT || 
-		RMD_APP_OPTION_SWIPE_TOP ||
-		RMD_APP_OPTION_SWIPE_BOTTOM) {
+		RMD_APP_OPTION_SWIPE_UP ||
+		RMD_APP_OPTION_SWIPE_DOWN) {
 
 		for(side in rmd.app.shiftOptions) {
 			opt = rmd.app.shiftOptions[side];
