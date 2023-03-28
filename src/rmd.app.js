@@ -280,10 +280,10 @@ rmd.app.directionToNumber = function(direction) {
 rmd.app.toggleLayoutShift = function(params) {
 	params = params || {};
 
-	if((body.hasClass('mode--layout-shift-left')) || 
-		(body.hasClass('mode--layout-shift-right')) || 
-		(body.hasClass('mode--layout-shift-top')) || 
-		(body.hasClass('mode--layout-shift-bottom'))
+	if((document.body.classList.contains('mode--layout-shift-left')) || 
+		(document.body.classList.contains('mode--layout-shift-right')) || 
+		(document.body.classList.contains('mode--layout-shift-top')) || 
+		(document.body.classList.contains('mode--layout-shift-bottom'))
 		) {
 			rmd.app.closeShift(params);
 			setTimeout(function () {
